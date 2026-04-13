@@ -8,20 +8,32 @@
     <div class="about-content">
       <h3>技术栈</h3>
       <ul>
-        <li>Vue 3</li>
+        <li>Vue 3 (组合式API)</li>
         <li>Vue Router</li>
         <li>Pinia (状态管理)</li>
         <li>Element Plus</li>
         <li>Vite</li>
+        <li>高德地图API 2.0</li>
+        <li>DeepSeek API</li>
       </ul>
       
-      <h3>功能特点</h3>
+      <h3>核心功能</h3>
       <ul>
-        <li>心愿清单管理</li>
-        <li>多选批量删除</li>
-        <li>响应式布局</li>
-        <li>路由切换</li>
-        <li>智能旅游导览</li>
+        <li>AI智能导览助手 - 支持流式对话与多轮上下文</li>
+        <li>地图定位导航 - 高德地图POI搜索与路线规划</li>
+        <li>景点智能推荐 - 基于对话的个性化景点推荐</li>
+        <li>心愿清单管理 - 添加、删除、批量操作</li>
+        <li>历史对话记忆 - 会话持久化与上下文恢复</li>
+        <li>万寿菊花瓣飘落 - 电影主题动画效果</li>
+        <li>响应式布局 - 三栏可拖拽自适应设计</li>
+      </ul>
+      
+      <h3>主题特色</h3>
+      <ul>
+        <li>《寻梦环游记》电影配色</li>
+        <li>深紫色背景 + 橙色金色强调</li>
+        <li>骷髅头、吉他、灵兽等标志性元素</li>
+        <li>墨西哥亡灵节氛围设计</li>
       </ul>
       
       <div class="decoration">
@@ -131,6 +143,16 @@
 .about-content li:nth-child(3) { animation-delay: 0.3s; }
 .about-content li:nth-child(4) { animation-delay: 0.4s; }
 .about-content li:nth-child(5) { animation-delay: 0.5s; }
+.about-content li:nth-child(6) { animation-delay: 0.6s; }
+.about-content li:nth-child(7) { animation-delay: 0.7s; }
+.about-content li:nth-child(8) { animation-delay: 0.8s; }
+.about-content li:nth-child(9) { animation-delay: 0.9s; }
+.about-content li:nth-child(10) { animation-delay: 1.0s; }
+.about-content li:nth-child(11) { animation-delay: 1.1s; }
+.about-content li:nth-child(12) { animation-delay: 1.2s; }
+.about-content li:nth-child(13) { animation-delay: 1.3s; }
+.about-content li:nth-child(14) { animation-delay: 1.4s; }
+.about-content li:nth-child(15) { animation-delay: 1.5s; }
 
 @keyframes slideInRight {
   from {
