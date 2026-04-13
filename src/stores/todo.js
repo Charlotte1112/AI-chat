@@ -5,11 +5,7 @@ import { ref, computed } from 'vue'
 export const useTodoStore = defineStore('todo', () => {
   // 【Vue核心概念：响应式数据】
   // 使用ref创建响应式数据
-  const todos = ref([
-    { id: 1, text: '学习Vue 3', completed: false },
-    { id: 2, text: '创建Todo应用', completed: false },
-    { id: 3, text: '集成路由和状态管理', completed: true }
-  ])
+  const todos = ref([])
 
   // 【新增功能：多选批量删除】
   // 使用Set数据结构存储选中的待办事项ID

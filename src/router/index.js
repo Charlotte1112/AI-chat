@@ -6,13 +6,13 @@ import HomeView from '../views/HomeView.vue'
 import TodoView from '../views/TodoView.vue'
 import AboutView from '../views/AboutView.vue'
 import AIVIew from '../views/AIVIew.vue'
+import TourGuideView from '../views/TourGuideView.vue'
 
 // 定义路由配置
 const routes = [
   {
     path: '/',
-    name: 'home',
-    component: HomeView
+    redirect: '/tour'
   },
   {
     path: '/todo',
@@ -25,9 +25,9 @@ const routes = [
     component: AboutView
   },
   {
-    path: '/ai',
-    name: 'ai',
-    component: AIVIew
+    path: '/tour',
+    name: 'tour',
+    component: TourGuideView
   }
 ]
 
