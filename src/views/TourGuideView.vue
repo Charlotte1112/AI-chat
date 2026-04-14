@@ -45,11 +45,11 @@
         <h3>智能导览助手</h3>
         <div class="coco-decoration">🎵🌸</div>
       </div>
-      <div class="chat-messages">
+      <div class="chat-messages" ref="chatMessages">
         <div v-for="(msg, index) in messages" :key="index" class="message" :class="msg.type">
           <div class="message-content">
             <div class="message-sender">{{ msg.type === 'user' ? '您' : '助手' }}</div>
-            <div class="message-text">{{ msg.content }}</div>
+            <div class="message-text" v-html="renderContent(msg.content)"></div>
           </div>
         </div>
       </div>
@@ -59,13 +59,24 @@
           type="text" 
           placeholder="输入指令，例如：我想去北京玩三天、推荐一些历史文化景点、把故宫添加到心愿清单"
           @keyup.enter="sendMessage"
-        />
-        <button 
-          @click="sendMessage" 
           :disabled="isLoading"
-        >
-          {{ isLoading ? '发送中...' : '发送' }}
-        </button>
+        />
+        <div class="input-buttons">
+          <button 
+            @click="sendMessage" 
+            :disabled="isLoading"
+            class="send-button"
+          >
+            {{ isLoading ? '发送中...' : '发送' }}
+          </button>
+          <button 
+            v-if="isLoading"
+            @click="stopGenerating"
+            class="stop-button"
+          >
+            停止
+          </button>
+        </div>
       </div>
       <!-- 右侧拖拽手柄 -->
       <div 
@@ -77,9 +88,10 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import AMapLoader from '@amap/amap-jsapi-loader'
+import { ElMessage } from 'element-plus'
 import { useTodoStore } from '../stores/todo'
 import { useTourStore } from '../stores/tour'
 
@@ -94,6 +106,8 @@ export default {
     const distanceLabels = ref([])
     const inputMessage = ref('')
     const isLoading = ref(false)
+    const chatMessages = ref(null)
+    const abortController = ref(null)
     
     // 使用storeToRefs获取store中的响应式状态
     const { messages, attractions, currentCity, currentProvince, conversationHistory } = storeToRefs(tourStore)
@@ -113,6 +127,50 @@ export default {
     const rightWidth = ref(300)
     const isResizing = ref(false)
     const resizeType = ref(null)
+    
+    // 监听消息变化，自动滚动到底部
+    watch(messages, async () => {
+      await nextTick()
+      scrollToBottom()
+    }, { deep: true })
+    
+    // 滚动到聊天窗口底部
+    const scrollToBottom = () => {
+      if (chatMessages.value) {
+        chatMessages.value.scrollTop = chatMessages.value.scrollHeight
+      }
+    }
+    
+    // 停止生成
+    const stopGenerating = () => {
+      if (abortController.value) {
+        abortController.value.abort()
+        isLoading.value = false
+        tourStore.addMessage({ type: 'assistant', content: '生成已停止' })
+      }
+    }
+    
+    // 渲染内容（支持基本富文本）
+    const renderContent = (content) => {
+      if (!content) return ''
+      
+      // 简单的富文本处理
+      let html = content
+        // 处理换行
+        .replace(/\n/g, '<br>')
+        // 处理粗体
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        // 处理斜体
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        // 处理链接
+        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: #FFB84D;">$1</a>')
+        // 处理代码块
+        .replace(/```([\s\S]*?)```/g, '<pre style="background: rgba(26, 15, 61, 0.8); padding: 10px; border-radius: 5px; border: 1px solid rgba(255, 184, 77, 0.3); font-family: monospace; font-size: 12px; overflow-x: auto;"><code>$1</code></pre>')
+        // 处理行内代码
+        .replace(/`(.*?)`/g, '<code style="background: rgba(255, 184, 77, 0.2); padding: 2px 4px; border-radius: 3px; font-family: monospace;">$1</code>')
+      
+      return html
+    }
     
     // 开始调整左侧宽度
     const startResizeLeft = (e) => {
@@ -389,6 +447,9 @@ export default {
       try {
         console.log('开始调用API...')
         
+        // 创建AbortController
+        abortController.value = new AbortController()
+        
         // 构建消息数组，包含历史对话
         const messagesArray = [
           {
@@ -468,7 +529,8 @@ JSON字段要求：
             messages: messagesArray,
             temperature: 0.7,
             stream: true
-          })
+          }),
+          signal: abortController.value.signal
         })
         
         console.log('API响应状态:', response.status)
@@ -635,8 +697,12 @@ JSON字段要求：
       } catch (error) {
         console.error('处理指令失败:', error)
         tourStore.updateMessage(messageIndex, '处理请求时出错，请重试。')
+        ElMessage.error({
+          message: `网络错误：${error.message || '请检查网络连接'}`
+        })
       } finally {
         isLoading.value = false
+        abortController.value = null
       }
     }
 
@@ -1400,6 +1466,7 @@ JSON字段要求：
   padding: 15px;
   border-top: 2px solid rgba(255, 184, 77, 0.3);
   background: linear-gradient(90deg, rgba(45, 27, 105, 0.5) 0%, rgba(26, 15, 61, 0.5) 100%);
+  align-items: center;
 }
 
 .chat-input input {
@@ -1424,7 +1491,18 @@ JSON字段要求：
   box-shadow: 0 0 0 2px rgba(255, 184, 77, 0.2);
 }
 
-.chat-input button {
+.chat-input input:disabled {
+  background-color: rgba(45, 27, 105, 0.5);
+  cursor: not-allowed;
+  border-color: rgba(255, 184, 77, 0.2);
+}
+
+.input-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.send-button {
   padding: 0 20px;
   border: none;
   border-radius: 20px;
@@ -1434,18 +1512,38 @@ JSON字段要求：
   font-size: 14px;
   transition: all 0.3s;
   font-weight: 500;
+  white-space: nowrap;
 }
 
-.chat-input button:hover {
+.send-button:hover {
   background: linear-gradient(135deg, #FFB84D 0%, #FFD700 100%);
   transform: scale(1.05);
   box-shadow: 0 0 15px rgba(255, 184, 77, 0.5);
 }
 
-.chat-input button:disabled {
+.send-button:disabled {
   background: linear-gradient(135deg, rgba(255, 184, 77, 0.3) 0%, rgba(255, 107, 53, 0.3) 100%);
   cursor: not-allowed;
   transform: none;
+}
+
+.stop-button {
+  padding: 0 20px;
+  border: none;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #FF4500 0%, #FF0080 100%);
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.stop-button:hover {
+  background: linear-gradient(135deg, #FF6347 0%, #FF1493 100%);
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 69, 0, 0.5);
 }
 
 .resize-handle {

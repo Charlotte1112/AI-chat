@@ -1,44 +1,65 @@
-# AI Chat Backend Service
+# 寻梦环游记智能旅游导览系统 - 后端服务
 
-一个基于Node.js和Express的AI聊天后端服务，兼容OpenAI API格式，支持与讯飞MaaS平台进行交互。
+一个基于 Node.js 和 Express 构建的智能旅游导览后端服务，集成了 DeepSeek API 和高德地图 API，为前端应用提供 AI 聊天和地图服务。
 
-## 功能特性
+## 🚀 功能特性
 
-- ✅ 兼容OpenAI API格式的聊天接口
-- ✅ 支持普通非流式对话
-- ✅ 支持流式对话
-- ✅ 环境变量配置，安全管理API密钥
-- ✅ 跨域支持
+- ✅ **AI 聊天接口**：兼容 OpenAI API 格式，支持流式和非流式对话
+- ✅ **DeepSeek API 集成**：使用先进的大语言模型提供智能旅游建议
+- ✅ **高德地图代理**：处理地图相关请求，提供景点信息和导航
+- ✅ **环境变量配置**：安全管理 API 密钥
+- ✅ **跨域支持**：允许前端应用跨域访问
+- ✅ **错误处理**：完善的异常捕获和友好的错误提示
+- ✅ **实时流式响应**：支持 AI 回复的逐字显示
 
-## 安装和配置
+## 🛠️ 技术栈
+
+- Node.js
+- Express
+- dotenv (环境变量管理)
+- cors (跨域支持)
+- OpenAI SDK (API 集成)
+- WebSocket (实时通信)
+
+## 📁 项目结构
+
+```
+backend/
+├── index.js          # 主服务器文件
+├── deepseek.js       # DeepSeek API 集成
+├── gaode-proxy.js    # 高德地图代理
+├── package.json      # 项目依赖
+├── package-lock.json # 依赖锁定
+└── .env              # 环境变量配置
+```
+
+## 🔧 安装和配置
 
 ### 1. 安装依赖
 
 ```bash
+cd backend
 npm install
 ```
 
 ### 2. 配置环境变量
 
-在项目根目录创建`.env`文件，并添加以下配置：
+在 `backend/` 目录下创建 `.env` 文件：
 
 ```env
+# DeepSeek API 密钥
+API_KEY=your-deepseek-api-key
+
 # 服务器端口
 PORT=3000
 
-# 讯飞MaaS平台API密钥
-API_KEY=your_xunfei_maas_api_key
-
-# 讯飞应用ID（可选，当前实现暂不使用）
-APPID=your_xunfei_app_id
-
-# 讯飞API密钥（可选，当前实现暂不使用）
-API_SECRET=your_xunfei_api_secret
+# 高德地图 API 密钥（可选）
+AMAP_KEY=your-amap-api-key
 ```
 
 **注意事项：**
-- `API_KEY`需要从讯飞MaaS服务管控页面获取
-- `MODEL_ID`默认使用`xop3qwen1b7`，可根据实际情况调整
+- `API_KEY` 需要从 DeepSeek 官方获取
+- `AMAP_KEY` 需要从高德地图开放平台获取（可选）
 
 ### 3. 启动服务
 
@@ -50,11 +71,11 @@ npm run dev
 npm start
 ```
 
-服务将在`http://localhost:3000`启动
+服务将在 `http://localhost:3000` 启动
 
-## API使用说明
+## 📡 API 接口说明
 
-### 聊天接口
+### 1. AI 聊天接口
 
 ```
 POST /api/chat
@@ -76,10 +97,10 @@ POST /api/chat
   "messages": [
     {
       "role": "user",
-      "content": "你好，请介绍一下自己"
+      "content": "我想去北京玩三天，推荐一下行程"
     }
   ],
-  "stream": false,
+  "stream": true,
   "temperature": 0.7,
   "max_tokens": 4000
 }
@@ -89,26 +110,24 @@ POST /api/chat
 
 ```json
 {
-  "id": "cht000xxxx@dx19b0xxxxxxx",
+  "id": "chatcmpl-123",
   "object": "chat.completion",
-  "created": 1765285704,
-  "model": "xop3qwen1b7",
+  "created": 1704386814,
+  "model": "deepseek-chat",
   "choices": [
     {
       "index": 0,
       "message": {
         "role": "assistant",
-        "content": "你好！我是你的AI助手...",
-        "reasoning_content": "",
-        "plugins_content": null
+        "content": "北京三日游行程推荐：..."
       },
       "finish_reason": "stop"
     }
   ],
   "usage": {
-    "prompt_tokens": 17,
-    "completion_tokens": 77,
-    "total_tokens": 94
+    "prompt_tokens": 20,
+    "completion_tokens": 500,
+    "total_tokens": 520
   }
 }
 ```
@@ -116,12 +135,14 @@ POST /api/chat
 **流式响应示例：**
 
 ```
-data: {"id":"cht000xxxx@dx19b0xxxxxxx","object":"chat.completion","created":1765285710,"model":"xop3qwen1b7","choices":[{"index":0,"message":{"role":"assistant","content":"你好！我是你的AI助手...","reasoning_content":"","plugins_content":null},"finish_reason":"stop"}],"usage":{"prompt_tokens":17,"completion_tokens":70,"total_tokens":87}}
+data: {"id":"chatcmpl-123","object":"chat.completion","created":1704386814,"model":"deepseek-chat","choices":[{"index":0,"delta":{"role":"assistant","content":"北京"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-123","object":"chat.completion","created":1704386814,"model":"deepseek-chat","choices":[{"index":0,"delta":{"content":"三日游"},"finish_reason":null}]}
 
 data: [DONE]
 ```
 
-### 健康检查接口
+### 2. 健康检查接口
 
 ```
 GET /health
@@ -132,83 +153,140 @@ GET /health
 ```json
 {
   "status": "ok",
-  "message": "AI Chat API is running"
+  "message": "AI Chat API is running",
+  "timestamp": "2024-01-01T00:00:00Z"
 }
 ```
 
-## 关于流式请求的说明
+### 3. 地图服务接口
 
-系统支持完整的流式对话功能：
+```
+GET /api/map/search
+```
 
-- 客户端可以发送`stream: true`的请求启用流式输出
-- 服务器会将请求以流式方式发送给AI服务
-- 服务器会将AI服务的流式响应通过SSE格式（Server-Sent Events）实时返回给客户端
+**查询参数：**
+- `keyword`：搜索关键词（如"故宫"）
+- `city`：城市名称（如"北京"）
 
-流式请求的优势：
-1. 更快的响应速度（无需等待完整响应生成）
-2. 更好的用户体验（实时显示生成内容）
-3. 支持长时间对话（避免超时问题）
+**响应示例：**
 
-## 技术栈
+```json
+{
+  "status": "ok",
+  "data": [
+    {
+      "name": "故宫博物院",
+      "location": {
+        "lat": 39.916345,
+        "lng": 116.397155
+      },
+      "address": "北京市东城区景山前街4号",
+      "rating": 4.8
+    }
+  ]
+}
+```
 
-- Node.js
-- 原生HTTP模块（替代Express，提升流式性能）
-- dotenv
-- cors（通过原生代码实现）
+## 💡 核心功能实现
 
-## 开发和调试
+### 1. 流式对话处理
+- 使用 Express 处理 HTTP 请求
+- 通过 ReadableStream 处理流式响应
+- 支持 AbortController 中断请求
+
+### 2. AI 旅游规划
+- 基于 DeepSeek API 理解用户旅游需求
+- 智能生成个性化旅游路线
+- 结合地图数据提供精准推荐
+
+### 3. 地图服务集成
+- 高德地图 API 代理
+- 景点搜索和信息获取
+- 导航路线规划
+
+## 🔍 开发和调试
 
 ### 查看日志
 
 服务器运行时会输出详细的日志信息，包括：
-- 请求参数
-- 响应数据
-- 错误信息
+- 请求参数和响应状态
+- API 调用详情
+- 错误信息和处理
 
-可以通过终端查看这些日志，帮助调试和问题排查。
+### 测试 API
 
-### 测试API
-
-可以使用curl或Postman等工具测试API：
+可以使用 curl 或 Postman 等工具测试 API：
 
 ```bash
-# 测试非流式请求
-curl -X POST http://localhost:3000/api/chat -H "Content-Type: application/json" -d '{"messages": [{"role": "user", "content": "你好"}], "stream": false}'
+# 测试 AI 聊天（流式）
+curl -X POST http://localhost:3000/api/chat -H "Content-Type: application/json" -d '{"messages": [{"role": "user", "content": "你好，推荐一些北京的景点"}], "stream": true}'
 
-# 测试流式请求
-curl -X POST http://localhost:3000/api/chat -H "Content-Type: application/json" -d '{"messages": [{"role": "user", "content": "你好"}], "stream": true}'
+# 测试健康检查
+curl http://localhost:3000/health
+
+# 测试地图搜索
+curl "http://localhost:3000/api/map/search?keyword=故宫&city=北京"
 ```
 
-## 错误处理
+## 🛡️ 安全注意事项
 
-服务会返回以下常见错误：
+1. **API 密钥管理**：使用环境变量存储 API 密钥，不要硬编码在代码中
+2. **CORS 配置**：生产环境中建议限制允许的域名
+3. **请求验证**：添加请求参数验证，防止恶意请求
+4. **错误处理**：不要在响应中暴露敏感的错误信息
+5. **依赖更新**：定期更新依赖包，修复安全漏洞
 
-- `400 Bad Request`：请求参数格式错误
-- `500 Internal Server Error`：服务器内部错误
+## 🚀 部署建议
 
-错误响应格式：
+### 开发环境
+- 使用 `npm run dev` 启动服务
+- 支持热重载，开发体验流畅
 
-```json
-{
-  "error": "错误描述信息"
-}
-```
+### 生产环境
+1. **使用 PM2 管理进程**：
+   ```bash
+   npm install pm2 -g
+   pm2 start index.js --name "tour-guide-backend"
+   ```
 
-## 安全注意事项
+2. **配置 Nginx 反向代理**：
+   ```nginx
+   server {
+       listen 80;
+       server_name api.example.com;
+       
+       location / {
+           proxy_pass http://localhost:3000;
+           proxy_http_version 1.1;
+           proxy_set_header Upgrade $http_upgrade;
+           proxy_set_header Connection 'upgrade';
+           proxy_set_header Host $host;
+           proxy_cache_bypass $http_upgrade;
+       }
+   }
+   ```
 
-1. 不要将API密钥硬编码在代码中，使用环境变量管理
-2. 生产环境中建议启用HTTPS
-3. 考虑添加API请求频率限制
-4. 定期更新依赖包，修复安全漏洞
+3. **启用 HTTPS**：使用 Let's Encrypt 获取免费 SSL 证书
 
-## 未来改进计划
+## 🌟 未来改进计划
 
-- [ ] 解决流式请求连接稳定性问题
-- [ ] 添加更多AI模型支持
-- [ ] 实现请求缓存机制
-- [ ] 添加API文档页面
-- [ ] 支持更多OpenAI API特性
+- [ ] 添加更多 AI 模型支持（如 GPT-4、Claude 等）
+- [ ] 实现用户认证和会话管理
+- [ ] 添加请求缓存机制，提升性能
+- [ ] 支持更多地图服务和功能
+- [ ] 增加 API 文档页面（使用 Swagger）
+- [ ] 实现请求频率限制，防止滥用
 
-## 许可证
+## 📄 许可证
 
-ISC
+MIT License
+
+## 📞 联系方式
+
+如有问题或建议，请通过以下方式联系：
+- GitHub Issues: <repository-issues-url>
+- 电子邮件: 1948739075@qq.com
+
+---
+
+**为智能旅游导览系统提供强大的后端支持！** 🤖🗺️

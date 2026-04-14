@@ -1,36 +1,67 @@
 
-# AI聊天应用教程
+# 寻梦环游记智能旅游导览系统
 
-这是一个基于 Vue 3 + Node.js 构建的AI聊天应用教学项目，实现了与deep seek平台的集成，支持流式对话功能。
+一个基于 Vue 3 + Node.js 构建的智能旅游导览系统，结合了AI聊天功能和地图服务，为用户提供个性化的旅游规划和导览体验。
 
-## 技术栈
+## 🌟 项目特色
+
+- **智能AI聊天**：基于DeepSeek API的流式对话，支持多轮上下文理解
+- **旅游规划**：智能生成旅游路线，推荐景点和周边设施
+- **地图集成**：高德地图API集成，实现景点标记和导航
+- **响应式设计**：现代化UI，适配不同设备尺寸
+- **数据持久化**：本地存储聊天历史和用户偏好
+- **实时流式输出**：AI回复逐字显示，提升用户体验
+- **错误处理**：完善的网络错误提示和异常处理
+
+## 🛠️ 技术栈
 
 ### 前端
 - Vue 3 (Composition API)
-- Vite
+- Vite 7
 - Element Plus
-- CSS3
+- Pinia (状态管理)
+- Vue Router
+- Axios
+- CSS3 (渐变和动画效果)
 
 ### 后端
 - Node.js
-- 原生HTTP模块
-- HTTPS模块
-- dotenv
+- Express
+- dotenv (环境变量管理)
+- Cors (跨域支持)
+- OpenAI SDK (API集成)
+- WebSocket (实时通信)
 
 ### AI服务
-deep seek
+- DeepSeek API
 
-## 项目架构
+### 地图服务
+- 高德地图API
+
+## 📁 项目结构
 
 ```
 ├── backend/          # 后端服务
 │   ├── index.js     # 主服务器文件
+│   ├── deepseek.js  # DeepSeek API集成
+│   ├── gaode-proxy.js # 高德地图代理
 │   ├── package.json # 后端依赖
 │   └── .env         # 环境变量配置
 ├── src/             # 前端代码
-│   ├── views/       # 页面组件
-│   │   └── AIVIew.vue # AI聊天页面
 │   ├── components/  # 通用组件
+│   │   ├── ChatWindow.vue  # 聊天窗口组件
+│   │   ├── MapView.vue     # 地图组件
+│   │   └── TodoItem.vue    # 待办事项组件
+│   ├── views/       # 页面组件
+│   │   ├── AIVIew.vue      # AI聊天页面
+│   │   ├── TourGuideView.vue # 旅游导览页面
+│   │   ├── MapInfoView.vue   # 地图信息页面
+│   │   ├── TodoView.vue      # 待办事项页面
+│   │   └── AboutView.vue     # 关于页面
+│   ├── router/      # 路由配置
+│   ├── stores/      # Pinia状态管理
+│   │   ├── todo.js  # 待办事项状态
+│   │   └── tour.js  # 旅游相关状态
 │   ├── main.js      # 前端入口
 │   └── App.vue      # 根组件
 ├── index.html       # HTML模板
@@ -38,41 +69,38 @@ deep seek
 └── vite.config.js   # Vite配置
 ```
 
-## 核心功能
+## 🚀 快速开始
 
-1. **实时流式对话**：与AI模型进行实时的流式交互，逐字显示回复内容
-2. **消息历史管理**：自动维护对话历史，支持上下文理解
-3. **响应式UI设计**：适配不同屏幕尺寸的现代化界面
-4. **优雅的错误处理**：完善的错误提示和边界情况处理
-
-## 前置条件
+### 1. 前置条件
 
 - Node.js 16+ 环境
-- deep seek (获取API密钥)
-- Git (可选)
+- DeepSeek API 密钥
+- 高德地图 API 密钥 (可选)
+- Git
 
-## 快速开始
-
-### 1. 克隆项目
+### 2. 克隆项目
 
 ```bash
 git clone <repository-url>
-cd yuan-chat-vue
+cd AI-chat
 ```
 
-### 2. 配置环境变量
+### 3. 配置环境变量
 
 在 `backend/` 目录下创建 `.env` 文件：
 
 ```env
-# API密钥
-API_KEY=your-api-key-here
+# DeepSeek API密钥
+API_KEY=your-deepseek-api-key
 
 # 服务器端口
 PORT=3000
+
+# 高德地图API密钥（可选）
+AMAP_KEY=your-amap-api-key
 ```
 
-### 3. 安装依赖
+### 4. 安装依赖
 
 #### 前端依赖
 ```bash
@@ -86,7 +114,7 @@ npm install
 cd ..
 ```
 
-### 4. 启动服务
+### 5. 启动服务
 
 #### 启动后端服务
 ```bash
@@ -104,134 +132,77 @@ npm run dev
 
 前端应用将运行在 `http://localhost:5173`
 
-### 5. 访问应用
+### 6. 访问应用
 
-打开浏览器访问 `http://localhost:5173`，即可开始与AI聊天！
+打开浏览器访问 `http://localhost:5173`，即可开始使用智能旅游导览系统！
 
-## 核心代码解析
+## 📖 功能使用指南
 
-### 后端实现 (backend/index.js)
+### AI聊天功能
+1. 在聊天输入框中输入您的旅游需求
+2. 点击发送按钮或按Enter键
+3. 观看AI的实时流式回复
+4. 点击停止按钮可中断AI生成
+5. 聊天历史会自动保存
 
-#### HTTP服务器创建
-```javascript
-const http = require('http');
-const server = http.createServer((req, res) => {
-  // 设置CORS头
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  // 处理请求...
-});
-```
+### 旅游规划功能
+- **路线规划**：输入"我想去北京玩三天"获取详细行程
+- **景点推荐**：输入"推荐一些历史文化景点"获取景点建议
+- **周边搜索**：输入"找附近的餐厅"获取周边设施信息
+- **导航功能**：输入"去故宫"获取导航路线
 
-#### API端点处理
-```javascript
-// 处理POST请求到/api/chat
-if (req.method === 'POST' && req.url === '/api/chat') {
-  let body = '';
-  req.on('data', (chunk) => { body += chunk; });
-  req.on('end', () => {
-    const requestData = JSON.parse(body);
-    handleStreamRequest(requestData.messages, res);
-  });
-}
-```
+### 地图功能
+- 查看景点位置标记
+- 获取景点详细信息
+- 支持地图缩放和拖动
 
-#### 流式响应处理
-```javascript
-function handleStreamRequest(messages, res) {
-  // 构造请求体
-  const requestBody = {
-    model: 'xop3qwen1b7',
-    messages: messages,
-    max_tokens: 4000,
-    temperature: 0.7,
-    stream: true
-  };
-  
-  // 发送HTTPS请求到MaaS平台
-  const maasReq = https.request(options, (maasRes) => {
-    // 设置SSE响应头
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    
-    // 直接将MaaS响应传递给客户端
-    maasRes.pipe(res);
-  });
-  
-  maasReq.write(JSON.stringify(requestBody));
-  maasReq.end();
-}
-```
+## 🔧 核心功能实现
 
-### 前端实现 (src/views/AIVIew.vue)
+### 1. 流式AI对话
+- 使用 AbortController 实现请求中断
+- 基于 ReadableStream 处理流式响应
+- 实时更新UI，逐字显示回复内容
 
-#### 消息发送处理
-```javascript
-const sendMessage = async () => {
-  if (!inputMessage.value.trim() || isGenerating.value) return;
-  
-  // 添加用户消息
-  const userMessage = { /* ... */ };
-  messages.value.push(userMessage);
-  
-  isGenerating.value = true;
-  
-  try {
-    // 调用后端API
-    const response = await fetch('http://localhost:3000/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: apiMessages })
-    });
-    
-    // 处理流式响应
-    await handleStreamResponse(response);
-  } catch (error) {
-    ElMessage.error('获取AI回复失败');
-  } finally {
-    isGenerating.value = false;
-  }
-};
-```
+### 2. 智能旅游规划
+- 基于AI理解用户需求
+- 结合地图数据提供精准推荐
+- 支持多轮对话，持续优化推荐
 
-#### 流式响应处理
-```javascript
-const handleStreamResponse = async (response) => {
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  
-  let aiReply = { /* ... */ };
-  messages.value.push(aiReply);
-  
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    
-    const chunk = decoder.decode(value, { stream: true });
-    const lines = chunk.split('\n');
-    
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        const data = line.slice(6).trim();
-        if (data === '[DONE]') break;
-        
-        const json = JSON.parse(data);
-        const content = json.choices[0].delta.content;
-        if (content) {
-          aiReply.content += content;
-          messages.value = [...messages.value];
-          scrollToBottom();
-        }
-      }
-    }
-  }
-};
-```
+### 3. 自动滚动
+- 使用 Vue 3 watch 监听消息变化
+- 结合 nextTick 实现平滑滚动
+- 确保新消息总是可见
 
-## 部署建议
+### 4. 数据持久化
+- 使用 localStorage 存储聊天历史
+- Pinia 状态管理，自动同步数据
+- 页面刷新后自动恢复会话
+
+### 5. 错误处理
+- 网络错误捕获和提示
+- 友好的用户反馈
+- 系统稳定性保障
+
+## 📱 界面特色
+
+- **寻梦环游记主题**：金色万寿菊元素，温暖的色彩搭配
+- **现代化设计**：渐变背景，流畅动画效果
+- **响应式布局**：适配桌面和移动设备
+- **直观的用户界面**：清晰的消息气泡，易于使用的控制按钮
+
+## 🎨 技术亮点
+
+- **Vue 3 Composition API**：更灵活的代码组织
+- **Pinia 状态管理**：轻量级且强大的状态管理
+- **流式API处理**：实时响应，提升用户体验
+- **模块化设计**：清晰的代码结构，易于维护
+- **组件化开发**：高复用性，降低代码冗余
+
+## 🌐 部署建议
 
 ### 开发环境
 - 使用 `npm run dev` 启动服务
-- 前端支持热重载
+- 前端支持热重载，开发体验流畅
 
 ### 生产环境
 1. 构建前端生产版本：
@@ -246,7 +217,7 @@ server {
     server_name example.com;
     
     location / {
-        root /path/to/dist;
+        root /path/to/AI-chat/dist;
         index index.html;
         try_files $uri $uri/ /index.html;
     }
@@ -265,51 +236,19 @@ server {
 3. 使用PM2管理后端进程：
 ```bash
 cd backend
-pm install pm2 -g
+npm install pm2 -g
 pm start
 ```
 
-## 常见问题
-
-### 1. API请求失败
-- 检查 `.env` 文件中的API密钥是否正确
-- 确保网络连接正常，能够访问讯飞MaaS平台
-- 查看后端日志了解具体错误信息
-
-### 2. 流式响应不显示
-- 检查浏览器控制台是否有JavaScript错误
-- 确认后端服务正常运行
-- 验证网络请求是否成功
-
-### 3. 前端样式异常
-- 检查Element Plus是否正确安装
-- 清除浏览器缓存
-- 查看控制台是否有CSS错误
-
-## 扩展学习
-
-### 功能扩展建议
-1. 添加多模型选择功能
-2. 实现消息保存和加载
-3. 增加用户身份认证
-4. 添加语音输入/输出功能
-5. 支持文件上传和处理
-
-### 技术深入学习
-- Vue 3 Composition API 官方文档
-- Node.js 流处理机制
-- Server-Sent Events (SSE) 协议
--deep seek API 文档
-
-## 贡献指南
+## 🤝 贡献指南
 
 欢迎提交Issue和Pull Request来改进这个项目！
 
-## 许可证
+## 📄 许可证
 
 MIT License
 
-## 联系方式
+## 📞 联系方式
 
 如有问题或建议，请通过以下方式联系：
 - GitHub Issues: <repository-issues-url>
@@ -317,4 +256,4 @@ MIT License
 
 ---
 
-**享受AI聊天的乐趣！** 🤖💬
+**开启您的智能旅游之旅！** 🌟�
